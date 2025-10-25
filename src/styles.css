@@ -1,0 +1,9 @@
+/* Optional global styles */
+:root{
+  --accent: #ff3e00;
+}
+body{
+  margin:0;
+  padding:0;
+  background: #f9f9fb;
+}
