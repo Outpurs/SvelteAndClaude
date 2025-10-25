@@ -1,5 +1,29 @@
 <script>
+  import { supabase } from './lib/supabaseClient.js';
+  import { onMount } from 'svelte';
+
   let count = 0;
+  let supabaseStatus = '';
+
+  async function checkSupabase() {
+    supabaseStatus = 'Checking...';
+    try {
+      // Try a harmless call - get current auth session (won't error if anon key)
+      const {
+        data: sessionData,
+        error: sessionError
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        supabaseStatus = `Error: ${sessionError.message}`;
+        return;
+      }
+
+      supabaseStatus = `OK — session: ${JSON.stringify(sessionData ?? null)}`;
+    } catch (err) {
+      supabaseStatus = `Error: ${err?.message ?? err}`;
+    }
+  }
 </script>
 
 <style>
@@ -10,11 +34,11 @@
     margin: 0 auto;
   }
   h1 {
-    color: #ff3e00;
+    color: #4400ff;
     margin-bottom: 1rem;
   }
   button {
-    background: #ff3e00;
+    background: #00ff0d;
     color: rgb(88, 20, 20);
     border: none;
     padding: 0.6rem 1rem;
@@ -24,7 +48,20 @@
 </style>
 
 <main>
-  <h1>Svelte 5 — Minimal Template</h1>
+  <h1>ADHD Learning App</h1>
   <p>Click count: {count}</p>
   <button on:click={() => count++}>Increment</button>
+
+  <hr />
+  <h2>Supabase</h2>
+  <p>
+    Use the button below to test the Supabase client. Make sure you set
+    <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in a
+    `.env` file at the project root.
+  </p>
+  <button on:click={checkSupabase}>Check Supabase</button>
+  <p>{supabaseStatus}</p>
+
+
+
 </main>

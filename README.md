@@ -22,3 +22,19 @@ npm run preview
 Notes:
 - Uses Vite with `@sveltejs/vite-plugin-svelte`.
 - Edit `src/App.svelte` and `src/main.js` to start developing.
+
+Supabase
+-------
+
+To connect a Supabase project from the browser, create a `.env` file at the
+project root with these two variables (replace the values with your project's
+URL and anon key):
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=public-anon-key
+```
+
+The app contains a small example using `src/lib/supabaseClient.js`. After you
+set the env vars, restart the dev server (`npm run dev`) and click "Check
+Supabase" in the app to verify the client can reach Supabase.
