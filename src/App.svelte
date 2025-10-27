@@ -1,6 +1,7 @@
 <script>
   import { supabase } from './lib/supabaseClient.js';
   import { onMount } from 'svelte';
+  import Carousel from './components/Carousel.svelte';
 
   let count = 0;
   let supabaseStatus = '';
@@ -24,6 +25,13 @@
       supabaseStatus = `Error: ${err?.message ?? err}`;
     }
   }
+
+  const snippets = [
+    { title: 'Focus Tip', excerpt: 'Try the Pomodoro technique: 25 minutes focused, 5 minutes break.', meta: 'Practice daily' },
+    { title: 'Quick Strategy', excerpt: 'Break tasks into 2–3 minute actions to reduce overwhelm.', meta: 'Small wins' },
+    { title: 'Mindful Pause', excerpt: 'Take three deep breaths before switching tasks.', meta: 'Reset attention' },
+    { title: 'Routine', excerpt: 'Schedule the hardest task first when energy is high.', meta: 'Peak performance' }
+  ];
 </script>
 
 <style>
@@ -49,18 +57,22 @@
 
 <main>
   <h1>ADHD Learning App</h1>
-  <p>Click count: {count}</p>
-  <button on:click={() => count++}>Increment</button>
+  <!-- <p>Click count: {count}</p>
+  <button on:click={() => count++}>Increment</button> -->
 
   <hr />
-  <h2>Supabase</h2>
-  <p>
+  <h2>Snippets</h2>
+  <p>Swipe or click the arrows to scroll through short tips.</p>
+  <Carousel items={snippets} />
+  <hr />
+  <!-- <h2>Supabase</h2> -->
+  <!-- <p>
     Use the button below to test the Supabase client. Make sure you set
     <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in a
     `.env` file at the project root.
-  </p>
-  <button on:click={checkSupabase}>Check Supabase</button>
-  <p>{supabaseStatus}</p>
+  </p> -->
+  <!-- <button on:click={checkSupabase}>Check Supabase</button>
+  <p>{supabaseStatus}</p> -->
 
 
 
