@@ -14,7 +14,16 @@
     updateWidth();
     ro = new ResizeObserver(updateWidth);
     if (trackEl) ro.observe(trackEl);
-    return () => ro?.disconnect();
+
+    // listen on window for keyboard navigation so we don't need tabindex on a
+    // non-interactive element (avoids Svelte a11y lint errors)
+    const handler = (e) => onKey(e);
+    window.addEventListener('keydown', handler);
+
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('keydown', handler);
+    };
   });
 
   function scrollNext() {
@@ -93,7 +102,7 @@
 </style>
 
 <div class="viewport" role="region" aria-label="Snippet carousel">
-  <div bind:this={trackEl} class="track" tabindex="0" role="list" on:keydown={onKey}>
+  <div bind:this={trackEl} class="track" role="list" aria-label="Snippets">
     {#each items as it}
       <article class="card" role="listitem">
         <h3>{it.title}</h3>
