@@ -42,7 +42,7 @@
     try {
       const { data, error } = await supabase
         .from('snippets')
-        .select('snippet_id, snippet_title, snippet, images')
+        .select('snippet_id, snippet_title, snippet, images, course_id')
         .order('snippet_id', { ascending: true });
 
       if (error) {
@@ -85,7 +85,7 @@
 </style>
 
 <main>
-  <h1>ADHD Learning App</h1>
+  <h1>eli5</h1>
   <!-- <p>Click count: {count}</p>
   <button on:click={() => count++}>Increment</button> -->
 
