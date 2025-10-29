@@ -6,6 +6,18 @@
   let count = 0;
   let supabaseStatus = '';
   let snippets = [];
+  let allSnippets = [];
+  let selectedCourseId = '';
+
+  $: {
+    if (selectedCourseId) {
+      snippets = allSnippets.filter(s => s.course_id === selectedCourseId);
+    } else {
+      snippets = allSnippets;
+    }
+  }
+
+  $: uniqueCourses = [...new Set(allSnippets.map(s => s.course_id).filter(Boolean))].sort();
   let loadingSnippets = false;
 
   async function checkSupabase() {
@@ -67,19 +79,22 @@
 
       if (error) {
         supabaseStatus = `Error loading snippets: ${error.message}`;
-        snippets = fallbackSnippets;
+        allSnippets = fallbackSnippets;
+        snippets = allSnippets;
       } else if (!data || data.length === 0) {
         supabaseStatus = 'No snippets found in Supabase — using fallback data.';
-        snippets = fallbackSnippets;
+        allSnippets = fallbackSnippets;
+        snippets = allSnippets;
       } else {
         supabaseStatus = `Loaded ${data.length} snippets`;
         // map DB columns to the UI shape (adjust if your column names differ)
-        snippets = data.map((r) => ({ 
+        allSnippets = data.map((r) => ({ 
           title: r.snippet_title ?? r.title, 
           snippet: r.snippet ?? r.excerpt, 
           meta: r.images ?? null, 
           course_id: r.course_id ?? null 
         }));
+        snippets = allSnippets;
       }
     } catch (err) {
       supabaseStatus = `Unexpected error: ${err?.message ?? err}`;
@@ -93,126 +108,54 @@
   onMount(() => {
     loadSnippetsFromSupabase();
   });
+
 </script>
 
 <style>
-  :global(body) {
-    margin: 0;
-    background: linear-gradient(135deg, #f6f8ff 0%, #ffffff 100%);
-    min-height: 100vh;
+  :root{
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --muted: #7a7a7a;
+    --accent: #1f2937; /* dark slate */
   }
 
-  main {
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    padding: 2rem;
-    max-width: 720px;
-    margin: 0 auto;
+  :global(body){
+    margin:0;
+    background:var(--bg);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
   }
 
-  .hero {
-    text-align: center;
-    padding: 2rem 1rem 3rem;
-    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 100%);
-    border-radius: 0 0 30px 30px;
-    margin: -2rem -2rem 2rem;
+  main{
+    max-width:980px;
+    margin: 3rem auto;
+    padding: 0 1.25rem;
   }
 
-  h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(135deg, #4400ff 0%, #8066ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin: 0 0 0.5rem;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+  .hero{
+    text-align:center;
+    margin-bottom:1.5rem;
   }
 
-  .tagline {
-    color: #666;
-    font-size: 1.1rem;
-    margin: 0;
+  h1{font-size:2rem;margin:0;color:var(--accent);font-weight:600}
+  .tagline{color:var(--muted);margin-top:0.35rem}
+
+  .snippet-section{
+    background:transparent;padding:0;margin:1.25rem 0 2rem;border-radius:12px;display:block
   }
 
-  section {
-    background: white;
-    border-radius: 16px;
-    padding: 2rem;
-    margin: 2rem 0;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-  }
+  .course-header{display:flex;justify-content:center;margin-bottom:1rem}
+  .course-select{appearance:none;padding:0.6rem 1.1rem;border-radius:999px;border:1px solid #e6e6e6;background:#fff;color:var(--accent);min-width:180px}
 
-  h2 {
-    color: #2d2d2d;
-    font-size: 1.5rem;
-    margin: 0 0 1rem;
-  }
+  /* keep sections clean */
+  section{background:transparent;padding:0;margin:0}
 
-  p {
-    color: #4a4a4a;
-    line-height: 1.6;
-    margin: 1rem 0;
-  }
+  .status{display:inline-block;padding:0.35rem 0.8rem;border-radius:8px;background:#fff;color:var(--muted);border:1px solid #eee}
 
-  code {
-    background: #f5f5f5;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-    font-size: 0.9em;
-    color: #4400ff;
-  }
+  button{background:var(--accent);color:#fff;border:none;padding:0.6rem 1rem;border-radius:10px;cursor:pointer}
+  button:hover{opacity:0.95}
 
-  .debug-section {
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-top: 2rem;
-    background: #fafafa;
-  }
-
-  button {
-    background: #4400ff;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  button:hover {
-    background: #3300cc;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(68,0,255,0.15);
-  }
-
-  .status {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    background: #f5f5f5;
-    color: #666;
-    font-size: 0.9rem;
-    margin-top: 1rem;
-  }
-
-  .course-header {
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .course-badge {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #4400ff 0%, #8066ff 100%);
-    color: white;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(68,0,255,0.15);
-    transition: all 0.3s ease;
-  }
 </style>
 
 <main>
@@ -221,24 +164,16 @@
     <p class="tagline">Complex ideas, explained simply</p>
   </div>
 
-  <section>
+  <section class="snippet-section">
     <div class="course-header">
-      {#if snippets.length > 0}
-        <div class="course-badge">
-          Course: {snippets[0].course_id}
-        </div>
-      {/if}
+      <select bind:value={selectedCourseId} class="course-select" aria-label="Filter by course">
+        <option value=''>All Courses</option>
+        {#each uniqueCourses as cid}
+          <option value={cid}>{cid}</option>
+        {/each}
+      </select>
     </div>
-    <Carousel 
-      items={snippets}
-      on:change={({ detail }) => {
-        // Update visible course ID when active slide changes
-        const courseEl = document.querySelector('.course-badge');
-        if (courseEl && snippets[detail]) {
-          courseEl.textContent = `Course: ${snippets[detail].course_id}`;
-        }
-      }}
-    />
+    <Carousel items={snippets} />
   </section>
 
   <section class="debug-section">

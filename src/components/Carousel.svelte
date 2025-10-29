@@ -56,12 +56,25 @@
 
   function scrollNext() {
     if (!trackEl) return;
-    trackEl.scrollBy({ left: Math.round(cardWidth), behavior: 'smooth' });
+    // clamp to avoid overscroll
+    const maxScrollLeft = trackEl.scrollWidth - trackEl.clientWidth;
+    const target = Math.min(Math.round(trackEl.scrollLeft + cardWidth), maxScrollLeft);
+    if (Math.abs(trackEl.scrollLeft - target) < 1) return;
+    trackEl.scrollTo({ left: target, behavior: 'smooth' });
   }
 
   function scrollPrev() {
     if (!trackEl) return;
-    trackEl.scrollBy({ left: -Math.round(cardWidth), behavior: 'smooth' });
+    const target = Math.max(Math.round(trackEl.scrollLeft - cardWidth), 0);
+    if (Math.abs(trackEl.scrollLeft - target) < 1) return;
+    trackEl.scrollTo({ left: target, behavior: 'smooth' });
+  }
+
+  function goTo(index) {
+    if (!trackEl) return;
+    const maxScrollLeft = trackEl.scrollWidth - trackEl.clientWidth;
+    const target = Math.min(Math.max(Math.round(index * cardWidth), 0), maxScrollLeft);
+    trackEl.scrollTo({ left: target, behavior: 'smooth' });
   }
 
   function onKey(e) {
@@ -71,145 +84,31 @@
 </script>
 
 <style>
-  .viewport {
-    width: 100%;
-    max-width: 720px;
-    margin: 0 auto;
-  }
+  :root{--bg:#f7f8fa;--card:#fff;--muted:#8b8b8b;--accent:#222}
+  .viewport{width:100%;max-width:920px;margin:0 auto;padding:0}
+  .track{display:flex;gap:0;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:1rem;scroll-padding:0;scrollbar-width:none}
+  .track::-webkit-scrollbar{display:none}
 
-  .track {
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 0.5rem;
-    scroll-padding: 0;
-    scrollbar-width: none;
-  }
+  .card{scroll-snap-align:start;min-width:100%;flex:0 0 100%;background:var(--card);border:1px solid #ececec;border-radius:12px;padding:2rem;box-shadow:0 6px 20px rgba(11,15,20,0.03);display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:220px;color:var(--accent);transform:translateY(-6px);opacity:.98;transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .2s}
+  .card h3{margin:0 0 .5rem;font-size:1.05rem}
+  .card.active{transform:translateY(0);box-shadow:0 10px 30px rgba(11,15,20,0.06);border-color:#e0e0e0}
 
-  .track::-webkit-scrollbar { display: none; }
-
-  .card {
-    scroll-snap-align: start;
-    min-width: 100%;
-    flex: 0 0 100%;
-    /* parchment gradient with subtle SVG grain overlay */
-    background-image: linear-gradient(180deg, #fbf6e3 0%, #f0e6c8 100%), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='noise'><feTurbulence baseFrequency='0.8' numOctaves='2' seed='2'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23noise)' opacity='0.03' /></svg>");
-    background-repeat: no-repeat, repeat;
-    background-size: cover, 200px 200px;
-    background-position: center, 0 0;
-    border: 1px solid rgba(160,140,100,0.25);
-    border-radius: 10px;
-    padding: 1.25rem;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 200px;
-    color: #2b240f; /* slightly dark brown text for parchment */
-    transform: translateY(-8px);
-    opacity: 0.95;
-    transition: transform 320ms cubic-bezier(.2,.8,.2,1), opacity 240ms ease, box-shadow 240ms ease;
-  }
-
-  .card.active {
-    transform: translateY(0);
-    opacity: 1;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-  }
-
-  .controls {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-  }
-
-  .arrow {
-    background: #111827;
-    color: white;
-    border: none;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  /* focus styles */
-  .track:focus {
-    outline: 2px solid rgba(59,130,246,0.5);
-    outline-offset: 4px;
-  }
-
-  /* Styles for rendered HTML content */
-  .content {
-    width: 100%;
-    text-align: left;
-  }
-
+  .content{width:100%;color:#444;line-height:1.6}
   .content :global(h1),
   .content :global(h2),
-  .content :global(h3),
-  .content :global(h4),
-  .content :global(h5),
-  .content :global(h6) {
-    margin: 1rem 0 0.5rem;
-    color: #1f1810;
+  .content :global(h3) {
+    margin:.6rem 0;
   }
+  .content :global(p){margin:.45rem 0}
+  .content :global(code){background:#f3f4f6;padding:.1rem .3rem;border-radius:4px;font-family:monospace}
 
-  .content :global(p) {
-    margin: 0.5rem 0;
-    line-height: 1.5;
-  }
+  .controls{display:flex;justify-content:center;gap:1rem;margin-top:1rem}
+  .arrow{background:transparent;border:1px solid #d0d0d0;color:var(--accent);padding:.5rem .8rem;border-radius:8px;cursor:pointer;font-weight:600}
+  .arrow:hover{background:#f3f4f6}
 
-  .content :global(ul),
-  .content :global(ol) {
-    margin: 0.5rem 0;
-    padding-left: 1.5rem;
-  }
-
-  .content :global(li) {
-    margin: 0.25rem 0;
-  }
-
-  .content :global(code) {
-    background: rgba(0,0,0,0.05);
-    padding: 0.125rem 0.25rem;
-    border-radius: 3px;
-    font-family: monospace;
-  }
-
-  .content :global(pre) {
-    background: rgba(0,0,0,0.05);
-    padding: 1rem;
-    border-radius: 6px;
-    overflow-x: auto;
-    margin: 1rem 0;
-  }
-
-  .content :global(a) {
-    color: #2563eb;
-    text-decoration: none;
-  }
-
-  .content :global(a:hover) {
-    text-decoration: underline;
-  }
-
-  .content :global(blockquote) {
-    border-left: 3px solid #a39374;
-    margin: 1rem 0;
-    padding-left: 1rem;
-    color: #4b3f2f;
-  }
-
-  .content :global(img) {
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
-  }
+  .indicators{display:flex;justify-content:center;gap:.5rem;margin-top:.9rem}
+  .dot{width:10px;height:10px;border-radius:999px;background:#d6d6d6;cursor:pointer;border:1px solid rgba(0,0,0,0.04);transition:all .15s}
+  .dot.active{background:var(--accent);width:12px;height:12px}
 </style>
 
 <div class="viewport" role="region" aria-label="Snippet carousel">
@@ -227,8 +126,16 @@
     {/each}
   </div>
 
-  <div class="controls">
-    <button class="arrow" on:click={scrollPrev} aria-label="Previous">◀</button>
-    <button class="arrow" on:click={scrollNext} aria-label="Next">▶</button>
-  </div>
+  {#if items && items.length > 1}
+    <div class="indicators" aria-hidden="false">
+      {#each items as _, idx}
+        <button class="dot {idx === activeIndex ? 'active' : ''}" on:click={() => goTo(idx)} aria-label={`Go to slide ${idx + 1}`}></button>
+      {/each}
+    </div>
+
+    <div class="controls">
+      <button class="arrow" on:click={scrollPrev} aria-label="Previous">◀</button>
+      <button class="arrow" on:click={scrollNext} aria-label="Next">▶</button>
+    </div>
+  {/if}
 </div>
