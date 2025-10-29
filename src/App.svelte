@@ -30,10 +30,26 @@
 
   // Local fallback snippets used if Supabase is not configured or returns no rows
   const fallbackSnippets = [
-    { title: 'Focus Tip', excerpt: 'Try the Pomodoro technique: 25 minutes focused, 5 minutes break.', meta: 'Practice daily' },
-    { title: 'Quick Strategy', excerpt: 'Break tasks into 2–3 minute actions to reduce overwhelm.', meta: 'Small wins' },
-    { title: 'Mindful Pause', excerpt: 'Take three deep breaths before switching tasks.', meta: 'Reset attention' },
-    { title: 'Routine', excerpt: 'Schedule the hardest task first when energy is high.', meta: 'Peak performance' }
+    { 
+      title: 'Focus Tip', 
+      snippet: '<h3>Pomodoro Technique</h3><p>Try working in focused 25-minute blocks:</p><ul><li>Set a timer for 25 minutes</li><li>Work with *full* focus</li><li>Take a **5-minute** break</li></ul>', 
+      meta: 'Practice daily' 
+    },
+    { 
+      title: 'Quick Strategy', 
+      snippet: '<h3>Break It Down</h3><p>Make progress by breaking tasks into tiny steps:</p><ul><li>2-3 minute actions</li><li>Clear starting point</li><li>Visible progress</li></ul>', 
+      meta: 'Small wins' 
+    },
+    { 
+      title: 'Mindful Pause', 
+      snippet: '<h3>Reset Your Focus</h3><p>Before switching tasks:</p><ol><li>Take three deep breaths</li><li>Notice your surroundings</li><li>Set a clear intention</li></ol>', 
+      meta: 'Reset attention' 
+    },
+    { 
+      title: 'Routine', 
+      snippet: '<h3>Energy Management</h3><p>Align tasks with your energy levels:</p><blockquote>Schedule your most challenging work when your energy peaks</blockquote><p>For most people this is <code>2-4 hours</code> after waking.</p>', 
+      meta: 'Peak performance' 
+    }
   ];
 
   async function loadSnippetsFromSupabase() {
@@ -54,7 +70,12 @@
       } else {
         supabaseStatus = `Loaded ${data.length} snippets`;
         // map DB columns to the UI shape (adjust if your column names differ)
-        snippets = data.map((r) => ({ title: r.snippet_title ?? r.title, excerpt: r.snippet ?? r.excerpt, meta: r.images ?? null }));
+        snippets = data.map((r) => ({ 
+          title: r.snippet_title ?? r.title, 
+          snippet: r.snippet ?? r.excerpt, 
+          meta: r.images ?? null, 
+          course_id: r.course_id ?? null 
+        }));
       }
     } catch (err) {
       supabaseStatus = `Unexpected error: ${err?.message ?? err}`;

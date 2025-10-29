@@ -138,6 +138,74 @@
     outline: 2px solid rgba(59,130,246,0.5);
     outline-offset: 4px;
   }
+
+  /* Styles for rendered HTML content */
+  .content {
+    width: 100%;
+    text-align: left;
+  }
+
+  .content :global(h1),
+  .content :global(h2),
+  .content :global(h3),
+  .content :global(h4),
+  .content :global(h5),
+  .content :global(h6) {
+    margin: 1rem 0 0.5rem;
+    color: #1f1810;
+  }
+
+  .content :global(p) {
+    margin: 0.5rem 0;
+    line-height: 1.5;
+  }
+
+  .content :global(ul),
+  .content :global(ol) {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .content :global(li) {
+    margin: 0.25rem 0;
+  }
+
+  .content :global(code) {
+    background: rgba(0,0,0,0.05);
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+
+  .content :global(pre) {
+    background: rgba(0,0,0,0.05);
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+
+  .content :global(a) {
+    color: #2563eb;
+    text-decoration: none;
+  }
+
+  .content :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .content :global(blockquote) {
+    border-left: 3px solid #a39374;
+    margin: 1rem 0;
+    padding-left: 1rem;
+    color: #4b3f2f;
+  }
+
+  .content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
 </style>
 
 <div class="viewport" role="region" aria-label="Snippet carousel">
@@ -145,7 +213,9 @@
     {#each items as it, i}
       <article class="card {i === activeIndex ? 'active' : ''}" role="listitem" data-index={i}>
         <h3>{it.title}</h3>
-        <p>{it.excerpt}</p>
+        <div class="content">
+          {@html it.snippet}
+        </div>
         {#if it.meta}
           <small>{it.meta}</small>
         {/if}
