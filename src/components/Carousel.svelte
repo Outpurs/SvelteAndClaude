@@ -1,7 +1,8 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   export let items = [];
 
+  const dispatch = createEventDispatcher();
   let trackEl;
   let cardWidth = 0;
   let ro;
@@ -27,7 +28,10 @@
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const idx = Number(entry.target.dataset.index);
-            if (!Number.isNaN(idx)) activeIndex = idx;
+            if (!Number.isNaN(idx)) {
+              activeIndex = idx;
+              dispatch('change', idx);
+            }
           }
         });
       },
