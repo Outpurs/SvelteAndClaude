@@ -146,7 +146,40 @@
   }
 
   .course-header{display:flex;justify-content:center;margin-bottom:1rem}
-  .course-select{appearance:none;padding:0.6rem 1.1rem;border-radius:999px;border:1px solid #e6e6e6;background:#fff;color:var(--accent);min-width:180px}
+  .course-select{
+    appearance:none;
+    padding:0.75rem 2.2rem 0.75rem 1.2rem;
+    border-radius:12px;
+    border:1px solid rgba(0,0,0,0.08);
+    background:linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 0.8rem center;
+    background-size:1rem;
+    color:var(--accent);
+    min-width:200px;
+    font-size:0.95rem;
+    font-weight:500;
+    box-shadow:0 2px 4px rgba(0,0,0,0.04),
+               0 0 1px rgba(0,0,0,0.08),
+               inset 0 1px 0 rgba(255,255,255,0.8);
+    cursor:pointer;
+    transition:all 0.2s ease;
+  }
+  .course-select:hover{
+    border-color:rgba(0,0,0,0.12);
+    background:linear-gradient(to bottom, #ffffff 0%, #f5f7f9 100%);
+    box-shadow:0 3px 6px rgba(0,0,0,0.06),
+               0 0 1px rgba(0,0,0,0.12),
+               inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .course-select:focus{
+    outline:none;
+    border-color:rgba(0,0,0,0.15);
+    box-shadow:0 3px 8px rgba(0,0,0,0.08),
+               0 0 1px rgba(0,0,0,0.12),
+               inset 0 1px 0 rgba(255,255,255,0.8);
+  }
 
   /* keep sections clean */
   section{background:transparent;padding:0;margin:0}
@@ -176,6 +209,7 @@
     <Carousel items={snippets} />
   </section>
 
+  <!-- Debug section (uncomment to test Supabase connection)
   <section class="debug-section">
     <h2>Connection Status</h2>
     <p>
@@ -186,7 +220,7 @@
     <button on:click={checkSupabase}>Check Connection</button>
     <div class="status">{supabaseStatus}</div>
   </section>
-
+  -->
 
 
 </main>

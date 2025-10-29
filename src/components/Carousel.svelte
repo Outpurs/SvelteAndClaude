@@ -56,19 +56,16 @@
 
   function scrollNext() {
     if (!trackEl) return;
-    // clamp to avoid overscroll
     const maxScrollLeft = trackEl.scrollWidth - trackEl.clientWidth;
-    const target = Math.min(Math.round(trackEl.scrollLeft + cardWidth), maxScrollLeft);
+    const nextTarget = Math.min(Math.round(trackEl.scrollLeft + cardWidth), maxScrollLeft);
+    // if we're at (or very near) the end, wrap back to the start
+    const atEnd = trackEl.scrollLeft >= Math.max(0, maxScrollLeft - 2);
+    const target = atEnd ? 0 : nextTarget;
     if (Math.abs(trackEl.scrollLeft - target) < 1) return;
     trackEl.scrollTo({ left: target, behavior: 'smooth' });
   }
 
-  function scrollPrev() {
-    if (!trackEl) return;
-    const target = Math.max(Math.round(trackEl.scrollLeft - cardWidth), 0);
-    if (Math.abs(trackEl.scrollLeft - target) < 1) return;
-    trackEl.scrollTo({ left: target, behavior: 'smooth' });
-  }
+  // previous/back navigation intentionally removed; UX is forward-only with wrap.
 
   function goTo(index) {
     if (!trackEl) return;
@@ -77,8 +74,8 @@
     trackEl.scrollTo({ left: target, behavior: 'smooth' });
   }
 
+  // only forward navigation is needed (ArrowRight). ArrowLeft/back is intentionally ignored.
   function onKey(e) {
-    if (e.key === 'ArrowLeft') scrollPrev();
     if (e.key === 'ArrowRight') scrollNext();
   }
 </script>
@@ -106,9 +103,7 @@
   .arrow{background:transparent;border:1px solid #d0d0d0;color:var(--accent);padding:.5rem .8rem;border-radius:8px;cursor:pointer;font-weight:600}
   .arrow:hover{background:#f3f4f6}
 
-  .indicators{display:flex;justify-content:center;gap:.5rem;margin-top:.9rem}
-  .dot{width:10px;height:10px;border-radius:999px;background:#d6d6d6;cursor:pointer;border:1px solid rgba(0,0,0,0.04);transition:all .15s}
-  .dot.active{background:var(--accent);width:12px;height:12px}
+  /* indicators removed (forward-only UX) */
 </style>
 
 <div class="viewport" role="region" aria-label="Snippet carousel">
@@ -127,14 +122,7 @@
   </div>
 
   {#if items && items.length > 1}
-    <div class="indicators" aria-hidden="false">
-      {#each items as _, idx}
-        <button class="dot {idx === activeIndex ? 'active' : ''}" on:click={() => goTo(idx)} aria-label={`Go to slide ${idx + 1}`}></button>
-      {/each}
-    </div>
-
     <div class="controls">
-      <button class="arrow" on:click={scrollPrev} aria-label="Previous">◀</button>
       <button class="arrow" on:click={scrollNext} aria-label="Next">▶</button>
     </div>
   {/if}
