@@ -88,12 +88,25 @@
       } else {
         supabaseStatus = `Loaded ${data.length} snippets`;
         // map DB columns to the UI shape (adjust if your column names differ)
-        allSnippets = data.map((r) => ({ 
-          title: r.snippet_title ?? r.title, 
-          snippet: r.snippet ?? r.excerpt, 
-          meta: r.images ?? null, 
-          course_id: r.course_id ?? null 
-        }));
+        allSnippets = data.map((r) => {
+          // Parse images JSON if it exists and is valid
+          let imageUrls = [];
+          try {
+            if (r.images) {
+              const imageData = typeof r.images === 'string' ? JSON.parse(r.images) : r.images;
+              imageUrls = imageData.images || []; // Extract the array of URLs
+            }
+          } catch (e) {
+            console.warn('Failed to parse images JSON for snippet:', r.snippet_id);
+          }
+          
+          return {
+            title: r.snippet_title ?? r.title,
+            snippet: r.snippet ?? r.excerpt,
+            images: imageUrls,
+            course_id: r.course_id ?? null
+          };
+        });
         snippets = allSnippets;
       }
     } catch (err) {

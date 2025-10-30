@@ -98,6 +98,17 @@
   }
   .content :global(p){margin:.45rem 0}
   .content :global(code){background:#f3f4f6;padding:.1rem .3rem;border-radius:4px;font-family:monospace}
+  
+  .image-container{margin:1.5rem 0 1rem;border-radius:8px;overflow:hidden}
+  .image-container img{
+    width:100%;
+    height:auto;
+    display:block;
+    border-radius:8px;
+    margin-bottom:1rem;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  }
+  .image-container img:last-child{margin-bottom:0}
 
   .controls{display:flex;justify-content:center;gap:1rem;margin-top:1rem}
   .arrow{background:transparent;border:1px solid #d0d0d0;color:var(--accent);padding:.5rem .8rem;border-radius:8px;cursor:pointer;font-weight:600}
@@ -113,6 +124,18 @@
         <h3>{it.title}</h3>
         <div class="content">
           {@html it.snippet}
+          {#if it.images && it.images.length > 0}
+            <div class="image-container">
+              {#each it.images as imageUrl}
+                <img 
+                  src={imageUrl} 
+                  alt={it.title}
+                  loading="lazy"
+                  width="100%"
+                />
+              {/each}
+            </div>
+          {/if}
         </div>
         {#if it.meta}
           <small>{it.meta}</small>
