@@ -8,6 +8,16 @@
   let ro;
   let io; // intersection observer
   let activeIndex = 0;
+  let expandedImages = new Set(); // Track which cards have expanded images
+
+  function toggleImages(index) {
+    if (expandedImages.has(index)) {
+      expandedImages.delete(index);
+    } else {
+      expandedImages.add(index);
+    }
+    expandedImages = expandedImages; // trigger reactivity
+  }
 
   function updateWidth() {
     if (trackEl) cardWidth = trackEl.clientWidth;
@@ -99,7 +109,49 @@
   .content :global(p){margin:.45rem 0}
   .content :global(code){background:#f3f4f6;padding:.1rem .3rem;border-radius:4px;font-family:monospace}
   
-  .image-container{margin:1.5rem 0 1rem;border-radius:8px;overflow:hidden}
+  .image-toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    margin:1rem 0 0;
+    padding:0.5rem 0.8rem;
+    border-radius:6px;
+    background:transparent;
+    border:1px solid rgba(0,0,0,0.1);
+    color:var(--accent);
+    font-size:0.9rem;
+    cursor:pointer;
+    transition:all 0.2s ease;
+  }
+  .image-toggle:hover{
+    background:rgba(0,0,0,0.03);
+    border-color:rgba(0,0,0,0.15);
+  }
+  .image-toggle svg{
+    width:18px;
+    height:18px;
+  }
+  .image-toggle svg line{
+    transition:transform 0.2s ease;
+    transform-origin:center;
+  }
+  .image-toggle.expanded .vertical-line{
+    transform:scaleY(0);
+  }
+
+  .image-container{
+    margin:1rem 0 0;
+    border-radius:8px;
+    overflow:hidden;
+    opacity:0;
+    height:0;
+    transition:opacity 0.3s ease, height 0.3s ease;
+  }
+  .image-container.expanded{
+    opacity:1;
+    height:auto;
+    margin:1rem 0;
+  }
   .image-container img{
     width:100%;
     height:auto;
@@ -125,15 +177,29 @@
         <div class="content">
           {@html it.snippet}
           {#if it.images && it.images.length > 0}
-            <div class="image-container">
-              {#each it.images as imageUrl}
-                <img 
-                  src={imageUrl} 
-                  alt={it.title}
-                  loading="lazy"
-                  width="100%"
-                />
-              {/each}
+            <button 
+              class="image-toggle {expandedImages.has(i) ? 'expanded' : ''}"
+              on:click={() => toggleImages(i)}
+              aria-expanded={expandedImages.has(i)}
+              aria-label={expandedImages.has(i) ? "Hide images" : "Show images"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" class="vertical-line" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              {expandedImages.has(i) ? 'Hide' : 'Show'} Images
+            </button>
+            <div class="image-container {expandedImages.has(i) ? 'expanded' : ''}">
+              {#if expandedImages.has(i)}
+                {#each it.images as imageUrl}
+                  <img 
+                    src={imageUrl} 
+                    alt={it.title}
+                    loading="lazy"
+                    width="100%"
+                  />
+                {/each}
+              {/if}
             </div>
           {/if}
         </div>
