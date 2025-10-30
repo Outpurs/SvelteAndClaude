@@ -8,16 +8,7 @@
   let ro;
   let io; // intersection observer
   let activeIndex = 0;
-  let expandedImages = new Set(); // Track which cards have expanded images
-
-  function toggleImages(index) {
-    if (expandedImages.has(index)) {
-      expandedImages.delete(index);
-    } else {
-      expandedImages.add(index);
-    }
-    expandedImages = expandedImages; // trigger reactivity
-  }
+  // image overlay state is handled separately (openOverlay)
 
   function updateWidth() {
     if (trackEl) cardWidth = trackEl.clientWidth;
@@ -31,6 +22,8 @@
     // keyboard navigation (global) — keeps markup accessible
     const handler = (e) => onKey(e);
     window.addEventListener('keydown', handler);
+  // overlay-specific keyboard handling (Esc, Left/Right)
+  window.addEventListener('keydown', overlayKeydown);
 
     // intersection observer to detect which card is active (centered)
     io = new IntersectionObserver(
@@ -56,6 +49,7 @@
       ro?.disconnect();
       io?.disconnect();
       window.removeEventListener('keydown', handler);
+      window.removeEventListener('keydown', overlayKeydown);
     };
   });
 
@@ -87,6 +81,76 @@
   // only forward navigation is needed (ArrowRight). ArrowLeft/back is intentionally ignored.
   function onKey(e) {
     if (e.key === 'ArrowRight') scrollNext();
+  }
+
+  // Overlay image viewer state & controls
+  let overlayOpen = false;
+  let overlayImages = [];
+  let overlayIndex = 0;
+  let overlayImgLoaded = false;
+
+  function openOverlay(images, start = 0) {
+    if (!images || images.length === 0) return;
+    overlayImages = images;
+    overlayIndex = Math.max(0, Math.min(start, images.length - 1));
+    overlayOpen = true;
+    overlayImgLoaded = false;
+    document.body.style.overflow = 'hidden';
+    preloadNeighbors(overlayIndex);
+  }
+
+  function closeOverlay() {
+    overlayOpen = false;
+    overlayImages = [];
+    overlayIndex = 0;
+    overlayImgLoaded = false;
+    document.body.style.overflow = '';
+  }
+
+  function setOverlayIndex(idx) {
+    if (!overlayImages || overlayImages.length === 0) return;
+    overlayImgLoaded = false;
+    overlayIndex = (idx + overlayImages.length) % overlayImages.length;
+    preloadNeighbors(overlayIndex);
+  }
+
+  function nextOverlay() {
+    setOverlayIndex(overlayIndex + 1);
+  }
+
+  function prevOverlay() {
+    setOverlayIndex(overlayIndex - 1);
+  }
+
+  function overlayKeydown(e) {
+    if (!overlayOpen) return;
+    if (e.key === 'Escape') closeOverlay();
+    if (e.key === 'ArrowRight') nextOverlay();
+    if (e.key === 'ArrowLeft') prevOverlay();
+  }
+
+  // preload neighbor images for instant navigation
+  function preloadNeighbors(idx) {
+    if (!overlayImages || overlayImages.length <= 1) return;
+    const next = overlayImages[(idx + 1) % overlayImages.length];
+    const prev = overlayImages[(idx - 1 + overlayImages.length) % overlayImages.length];
+    [next, prev].forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }
+
+  // touch/swipe for overlay
+  let touchStartX = 0;
+  let touchEndX = 0;
+  function onTouchStart(e) { touchStartX = e.touches?.[0]?.clientX ?? 0; }
+  function onTouchMove(e) { touchEndX = e.touches?.[0]?.clientX ?? 0; }
+  function onTouchEnd() {
+    const dx = touchStartX - touchEndX;
+    const threshold = 40;
+    if (dx > threshold) nextOverlay();
+    else if (dx < -threshold) prevOverlay();
+    touchStartX = touchEndX = 0;
   }
 </script>
 
@@ -139,28 +203,22 @@
     transform:scaleY(0);
   }
 
-  .image-container{
-    margin:1rem 0 0;
-    border-radius:8px;
-    overflow:hidden;
-    opacity:0;
-    height:0;
-    transition:opacity 0.3s ease, height 0.3s ease;
+  /* Thumbnails inside the card */
+  .thumbs{display:flex;align-items:center;gap:.5rem;margin-left:.5rem}
+  .thumb{width:56px;height:40px;object-fit:cover;border-radius:6px;cursor:pointer;box-shadow:0 6px 18px rgba(6,12,20,0.08)}
+
+  /* Overlay styles for fullscreen viewer with fade/zoom */
+  .overlay{
+    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:1200;padding:1.25rem;
+    background:rgba(6,8,10,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
   }
-  .image-container.expanded{
-    opacity:1;
-    height:auto;
-    margin:1rem 0;
-  }
-  .image-container img{
-    width:100%;
-    height:auto;
-    display:block;
-    border-radius:8px;
-    margin-bottom:1rem;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
-  }
-  .image-container img:last-child{margin-bottom:0}
+  .overlay-content{display:flex;align-items:center;gap:1rem;max-width:1200px;width:100%;height:100%;box-sizing:border-box}
+  .overlay-image-wrap{flex:1 1 auto;display:flex;align-items:center;justify-content:center;position:relative;max-height:100%;overflow:hidden}
+  .overlay-image{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(2,6,23,0.6);transform-origin:center;transition:transform .32s cubic-bezier(.2,.9,.2,1),opacity .28s ease;opacity:0;transform:scale(1.05)}
+  .overlay-image.loaded{opacity:1;transform:scale(1)}
+  .overlay-prev,.overlay-next{background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.08);width:52px;height:52px;border-radius:12px;font-size:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+  .overlay-close{position:absolute;top:1rem;right:1rem;background:transparent;color:#fff;border:none;font-size:20px;cursor:pointer;z-index:1210;padding:.4rem .6rem;border-radius:6px}
+  .overlay-counter{position:absolute;bottom:12px;right:12px;color:rgba(255,255,255,0.95);font-size:13px;background:rgba(0,0,0,0.35);padding:6px 8px;border-radius:6px}
 
   .controls{display:flex;justify-content:center;gap:1rem;margin-top:1rem}
   .arrow{background:transparent;border:1px solid #d0d0d0;color:var(--accent);padding:.5rem .8rem;border-radius:8px;cursor:pointer;font-weight:600}
@@ -177,29 +235,28 @@
         <div class="content">
           {@html it.snippet}
           {#if it.images && it.images.length > 0}
-            <button 
-              class="image-toggle {expandedImages.has(i) ? 'expanded' : ''}"
-              on:click={() => toggleImages(i)}
-              aria-expanded={expandedImages.has(i)}
-              aria-label={expandedImages.has(i) ? "Hide images" : "Show images"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" class="vertical-line" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              {expandedImages.has(i) ? 'Hide' : 'Show'} Images
-            </button>
-            <div class="image-container {expandedImages.has(i) ? 'expanded' : ''}">
-              {#if expandedImages.has(i)}
-                {#each it.images as imageUrl}
-                  <img 
-                    src={imageUrl} 
-                    alt={it.title}
-                    loading="lazy"
-                    width="100%"
-                  />
+            <div class="image-toggle">
+              <button 
+                class="open-images"
+                on:click={() => openOverlay(it.images, 0)}
+                aria-label="Show images"
+              >
+                <span class="plus">+</span>
+                <span class="label">Show images</span>
+              </button>
+
+              <div class="thumbs">
+                {#each it.images as imageUrl, imgIdx}
+                  <button class="thumb-btn" on:click={() => openOverlay(it.images, imgIdx)} aria-label={`Open image ${imgIdx + 1}`}>
+                    <img
+                      src={imageUrl}
+                      alt={it.title}
+                      loading="lazy"
+                      class="thumb"
+                    />
+                  </button>
                 {/each}
-              {/if}
+              </div>
             </div>
           {/if}
         </div>
@@ -213,6 +270,30 @@
   {#if items && items.length > 1}
     <div class="controls">
       <button class="arrow" on:click={scrollNext} aria-label="Next">▶</button>
+    </div>
+  {/if}
+  
+  {#if overlayOpen}
+    <div class="overlay" role="dialog" aria-modal="true" on:click|self={closeOverlay}>
+      <button class="overlay-close" on:click={closeOverlay} aria-label="Close (Esc)">✕</button>
+      <div class="overlay-content" on:touchstart={onTouchStart} on:touchmove={onTouchMove} on:touchend={onTouchEnd}>
+        <button class="overlay-prev" on:click|stopPropagation={prevOverlay} aria-label="Previous image">‹</button>
+
+        <div class="overlay-image-wrap">
+          <img
+            src={overlayImages[overlayIndex]}
+            alt={`Image ${overlayIndex + 1} of ${overlayImages.length}`}
+            class="overlay-image {overlayImgLoaded ? 'loaded' : ''}"
+            on:load={() => { overlayImgLoaded = true; }}
+            loading="eager"
+          />
+          {#if overlayImages.length > 1}
+            <div class="overlay-counter">{overlayIndex + 1} / {overlayImages.length}</div>
+          {/if}
+        </div>
+
+        <button class="overlay-next" on:click|stopPropagation={nextOverlay} aria-label="Next image">›</button>
+      </div>
     </div>
   {/if}
 </div>
