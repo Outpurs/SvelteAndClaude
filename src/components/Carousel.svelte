@@ -160,11 +160,11 @@
   .track{display:flex;gap:0;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:1rem;scroll-padding:0;scrollbar-width:none}
   .track::-webkit-scrollbar{display:none}
 
-  .card{scroll-snap-align:start;min-width:100%;flex:0 0 100%;background:var(--card);border:1px solid #ececec;border-radius:12px;padding:2rem;box-shadow:0 6px 20px rgba(11,15,20,0.03);display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:220px;color:var(--accent);transform:translateY(-6px);opacity:.98;transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .2s}
+  .card{scroll-snap-align:start;min-width:100%;flex:0 0 100%;background:var(--card);border:1px solid #ececec;border-radius:12px;padding:1.2rem 1.2rem 1rem 1.2rem;box-shadow:0 6px 20px rgba(11,15,20,0.03);display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:140px;color:var(--accent);transform:translateY(-6px);opacity:.98;transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .2s}
   .card h3{margin:0 0 .5rem;font-size:1.05rem}
   .card.active{transform:translateY(0);box-shadow:0 10px 30px rgba(11,15,20,0.06);border-color:#e0e0e0}
 
-  .content{width:100%;color:#444;line-height:1.6}
+  .content{width:100%;color:#444;line-height:1.6;text-align:left;}
   .content :global(h1),
   .content :global(h2),
   .content :global(h3) {
