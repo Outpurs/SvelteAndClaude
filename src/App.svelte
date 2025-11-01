@@ -30,14 +30,14 @@
     checkingAuth = true;
     
     // Check if we're in browser context
-    if (typeof localStorage === 'undefined') {
+    if (typeof sessionStorage === 'undefined') {
       checkingAuth = false;
       return;
     }
     
     // Temporary bypass: if mock flag exists, treat as logged in
-    const mock = localStorage.getItem('eli5_mock_session');
-    const mockUserStr = localStorage.getItem('eli5_mock_user');
+    const mock = sessionStorage.getItem('eli5_mock_session');
+    const mockUserStr = sessionStorage.getItem('eli5_mock_user');
     
     if (mock === '1') {
       let mockUser = null;
@@ -65,7 +65,7 @@
     await checkSession();
     
     // Only listen to Supabase auth changes if we're not using mock session
-    const isMockSession = typeof localStorage !== 'undefined' && localStorage.getItem('eli5_mock_session') === '1';
+    const isMockSession = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('eli5_mock_session') === '1';
     
     if (!isMockSession) {
       authUnsub = supabase.auth.onAuthStateChange((_event, s) => {

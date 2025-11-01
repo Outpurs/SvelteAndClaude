@@ -10,7 +10,7 @@
     // Temporary bypass: immediately consider user "logged in" and go to app
     try {
       loading = true;
-      localStorage.setItem('eli5_mock_session', '1');
+      sessionStorage.setItem('eli5_mock_session', '1');
       // Soft redirect to root to trigger App.svelte session gate
       window.location.href = '/';
     } catch (err) {
@@ -18,14 +18,14 @@
       loading = false;
     }
     // To re-enable real OAuth later, replace the above with Supabase signInWithOAuth
-    // and remove the localStorage bypass.
+    // and remove the sessionStorage bypass.
   }
 
   function devLogin() {
     // Simple bypass for development: set mock session and navigate
     const mockUser = { email: 'dev@example.com', role: 'admin', ts: Date.now() };
-    localStorage.setItem('eli5_mock_session', '1');
-    localStorage.setItem('eli5_mock_user', JSON.stringify(mockUser));
+    sessionStorage.setItem('eli5_mock_session', '1');
+    sessionStorage.setItem('eli5_mock_user', JSON.stringify(mockUser));
     // Force a hard reload to ensure App.svelte re-runs onMount
     window.location.reload();
   }
