@@ -206,6 +206,8 @@
   /* Thumbnails inside the card */
   .thumbs{display:flex;align-items:center;gap:.5rem;margin-left:.5rem}
   .thumb{width:56px;height:40px;object-fit:cover;border-radius:6px;cursor:pointer;box-shadow:0 6px 18px rgba(6,12,20,0.08)}
+  .thumb-btn{padding:0;border:0;background:transparent;border-radius:6px;display:inline-flex;overflow:hidden}
+  .thumb-btn:focus{outline:2px solid rgba(31,41,55,0.12);outline-offset:2px}
 
   /* Overlay styles for fullscreen viewer with fade/zoom */
   .overlay{
@@ -274,7 +276,7 @@
   {/if}
   
   {#if overlayOpen}
-    <div class="overlay" role="dialog" aria-modal="true" on:click|self={closeOverlay}>
+  <div class="overlay" role="dialog" aria-modal="true" tabindex="0" on:click|self={closeOverlay}>
       <button class="overlay-close" on:click={closeOverlay} aria-label="Close (Esc)">✕</button>
       <div class="overlay-content" on:touchstart={onTouchStart} on:touchmove={onTouchMove} on:touchend={onTouchEnd}>
         <button class="overlay-prev" on:click|stopPropagation={prevOverlay} aria-label="Previous image">‹</button>
