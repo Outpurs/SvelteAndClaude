@@ -1,7 +1,8 @@
 <script>
   import { supabase } from './lib/supabaseClient.js';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import Carousel from './components/Carousel.svelte';
+  import Login from './components/Login.svelte';
 
   let count = 0;
   let supabaseStatus = '';
@@ -19,6 +20,70 @@
 
   $: uniqueCourses = [...new Set(allSnippets.map(s => s.course_id).filter(Boolean))].sort();
   let loadingSnippets = false;
+  let session = null;
+  let checkingAuth = true;
+
+  // Auth: load current session and listen for changes
+  let authUnsub = null;
+  
+  async function checkSession() {
+    checkingAuth = true;
+    
+    // Check if we're in browser context
+    if (typeof localStorage === 'undefined') {
+      checkingAuth = false;
+      return;
+    }
+    
+    // Temporary bypass: if mock flag exists, treat as logged in
+    const mock = localStorage.getItem('eli5_mock_session');
+    const mockUserStr = localStorage.getItem('eli5_mock_user');
+    
+    if (mock === '1') {
+      let mockUser = null;
+      try { 
+        mockUser = JSON.parse(mockUserStr || 'null'); 
+      } catch (e) {
+        console.error('Failed to parse mock user:', e);
+      }
+      session = { 
+        user: { 
+          id: 'mock-user', 
+          email: mockUser?.email || 'mock@example.com', 
+          role: mockUser?.role || 'admin' 
+        } 
+      };
+    } else {
+      const { data } = await supabase.auth.getSession();
+      session = data?.session ?? null;
+    }
+    
+    checkingAuth = false;
+  }
+  
+  onMount(async () => {
+    await checkSession();
+    
+    // Only listen to Supabase auth changes if we're not using mock session
+    const isMockSession = typeof localStorage !== 'undefined' && localStorage.getItem('eli5_mock_session') === '1';
+    
+    if (!isMockSession) {
+      authUnsub = supabase.auth.onAuthStateChange((_event, s) => {
+        session = s ?? null;
+        // When user logs in, refresh snippets
+        if (session && allSnippets.length === 0) {
+          loadSnippetsFromSupabase();
+        }
+      }).data?.subscription;
+    }
+    
+    // initial data load
+    loadSnippetsFromSupabase();
+  });
+
+  onDestroy(() => {
+    authUnsub?.unsubscribe?.();
+  });
 
   async function checkSupabase() {
     supabaseStatus = 'Checking...';
@@ -117,10 +182,7 @@
     }
   }
 
-  // Try to load snippets when the component mounts
-  onMount(() => {
-    loadSnippetsFromSupabase();
-  });
+  // (initial load is triggered in the auth onMount above)
 
 </script>
 
@@ -205,6 +267,13 @@
 </style>
 
 <main>
+  {#if checkingAuth}
+    <div style="display:flex;justify-content:center;align-items:center;min-height:100vh">
+      <p>Loading...</p>
+    </div>
+  {:else if !session}
+    <Login />
+  {:else}
   <div class="hero">
     <h1>eli5</h1>
     <p class="tagline">Complex ideas, explained simply</p>
@@ -236,4 +305,5 @@
   -->
 
 
+  {/if}
 </main>
