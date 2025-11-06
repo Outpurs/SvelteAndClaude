@@ -139,8 +139,9 @@
     try {
       const { data, error } = await supabase
         .from('snippets')
-        .select('snippet_id, snippet_title, snippet, images, course_id')
-        .order('snippet_id', { ascending: true });
+        .select('snippet_id, snippet_title, snippet, images, course_id, created_at')
+        // Oldest first by created_at
+        .order('created_at', { ascending: true });
 
       if (error) {
         supabaseStatus = `Error loading snippets: ${error.message}`;
